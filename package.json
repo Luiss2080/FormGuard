@@ -1,0 +1,15 @@
+{
+  "name": "@luiss2080/form-validator-simple",
+  "version": "1.0.0",
+  "description": "Validador de formularios simple y gratuito: required, email, minLength, sin dependencias",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": { ".": "./src/index.js" },
+  "files": ["src"],
+  "scripts": { "test": "node --test test/" },
+  "license": "MIT",
+  "author": "Luis Rocha (Luiss2080)",
+  "repository": { "type": "git", "url": "git+https://github.com/Luiss2080/form-validator-simple.git" },
+  "publishConfig": { "registry": "https://npm.pkg.github.com" },
+  "engines": { "node": ">=18" }
+}
