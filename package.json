@@ -9,7 +9,7 @@
     "./react": "./src/react/index.js"
   },
   "files": ["src"],
-  "scripts": { "test": "node --test test/" },
+  "scripts": { "test": "node --test test/*.test.js" },
   "license": "MIT",
   "author": "Luis Rocha (Luiss2080)",
   "repository": { "type": "git", "url": "git+https://github.com/Luiss2080/form-validator-simple.git" },
