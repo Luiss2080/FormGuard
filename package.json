@@ -4,7 +4,10 @@
   "description": "Validador de formularios simple y gratuito: required, email, minLength, sin dependencias",
   "type": "module",
   "main": "src/index.js",
-  "exports": { ".": "./src/index.js" },
+  "exports": {
+    ".": "./src/index.js",
+    "./react": "./src/react/index.js"
+  },
   "files": ["src"],
   "scripts": { "test": "node --test test/" },
   "license": "MIT",

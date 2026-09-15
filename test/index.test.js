@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { required, isEmail, minLength, isPhoneBolivia, validateForm } from '../src/index.js';
+import { required, isEmail, minLength, maxLength, isUrl, isNumeric, match, isPhoneBolivia, validateForm, validateFormAsync } from '../src/index.js';
 
 test('required rechaza vacío y espacios', () => {
   assert.equal(required('hola'), true);
@@ -42,4 +42,38 @@ test('validateForm agrega errores por campo', () => {
   assert.equal(valid, false);
   assert.equal(errors.nombre, 'Nombre requerido');
   assert.equal(errors.email, 'Email inválido');
+});
+
+test('maxLength respeta el máximo', () => {
+  assert.equal(maxLength('hola', 4), true);
+  assert.equal(maxLength('hola', 3), false);
+});
+
+test('isUrl valida formato de url', () => {
+  assert.equal(isUrl('https://google.com'), true);
+  assert.equal(isUrl('http://test.com/path'), true);
+  assert.equal(isUrl('not-a-url'), false);
+});
+
+test('isNumeric valida numeros', () => {
+  assert.equal(isNumeric('123'), true);
+  assert.equal(isNumeric('-123.45'), true);
+  assert.equal(isNumeric('abc'), false);
+  assert.equal(isNumeric(''), false);
+});
+
+test('match comprueba igualdad estricta', () => {
+  assert.equal(match('pass', 'pass'), true);
+  assert.equal(match('pass', 'fail'), false);
+});
+
+test('validateFormAsync maneja promesas', async () => {
+  const { valid, errors } = await validateFormAsync(
+    { username: 'taken' },
+    {
+      username: async (v) => (v !== 'taken') || 'Usuario ya existe',
+    }
+  );
+  assert.equal(valid, false);
+  assert.equal(errors.username, 'Usuario ya existe');
 });
