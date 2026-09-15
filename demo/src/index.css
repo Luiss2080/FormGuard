@@ -119,18 +119,24 @@ h1, h2, h3, h4 {
   .grid-2 { grid-template-columns: 1fr 1fr; }
 }
 
-/* Components */
+/* Input fields & Dropzone */
 .input-group {
   margin-bottom: 1.25rem;
   position: relative;
 }
 
 .input-label {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
   margin-bottom: 0.5rem;
   color: #ccc;
+}
+
+body.light-mode .input-label {
+  color: var(--text-muted);
 }
 
 .input-field {
@@ -144,6 +150,77 @@ h1, h2, h3, h4 {
   font-family: inherit;
   font-size: 1rem;
   transition: all 0.2s;
+}
+
+.dropzone {
+  border: 2px dashed var(--border);
+  padding: 2rem;
+  text-align: center;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--bg-input);
+  position: relative;
+}
+
+.dropzone:hover {
+  border-color: var(--accent);
+  background: rgba(109, 40, 217, 0.05);
+}
+
+.dropzone.has-error {
+  border-color: var(--error);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.dropzone.has-success {
+  border-color: var(--success);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+/* Tooltips */
+.tooltip-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: help;
+}
+
+.tooltip-text {
+  visibility: hidden;
+  background-color: var(--text-main);
+  color: var(--bg-main);
+  text-align: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  position: absolute;
+  z-index: 10;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  opacity: 0;
+  transition: all 0.2s;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--text-main) transparent transparent transparent;
+}
+
+.tooltip-container:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
 }
 
 .input-field:focus {

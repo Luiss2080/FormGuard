@@ -86,6 +86,18 @@ export function match(value, matchWith) {
   return value === matchWith;
 }
 
+/** Valida que el archivo no supere el tamaño máximo (en MB). */
+export function maxFileSize(file, maxMb) {
+  if (!file || !file.size) return false;
+  return file.size <= maxMb * 1024 * 1024;
+}
+
+/** Valida que el archivo coincida con los tipos permitidos (ej. ['image/jpeg', 'application/pdf']). */
+export function allowedFileTypes(file, typesArray) {
+  if (!file || !file.type) return false;
+  return typesArray.includes(file.type);
+}
+
 /**
  * Valida un número de celular boliviano: 8 dígitos, empezando en 6 o 7.
  * Acepta espacios/guiones y el prefijo +591 (se ignoran antes de validar).

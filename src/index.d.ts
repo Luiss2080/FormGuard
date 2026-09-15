@@ -18,6 +18,8 @@ export declare function isAlphanumeric(value: any): boolean;
 export declare function isDate(value: any): boolean;
 export declare function isCreditCard(value: any): boolean;
 export declare function match(value: any, matchWith: any): boolean;
+export declare function maxFileSize(file: any, maxMb: number): boolean;
+export declare function allowedFileTypes(file: any, typesArray: string[]): boolean;
 export declare function isPhoneBolivia(value: any): boolean;
 
 export interface ValidationOptions {
