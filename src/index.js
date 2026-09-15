@@ -3,6 +3,10 @@ const URL_RE = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
 const NUMERIC_RE = /^-?\d+(\.\d+)?$/;
 const ALPHANUMERIC_RE = /^[a-zA-Z0-9]+$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const IP_RE = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}$/i;
+const HEXCOLOR_RE = /^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$/i;
+const STRONG_PASSWORD_RE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 // Celulares bolivianos: 8 dígitos, empiezan con 6 o 7 (Entel/Tigo/Viva).
 const TELEFONO_BOLIVIA_RE = /^[67]\d{7}$/;
 
@@ -79,6 +83,37 @@ export function isCreditCard(value) {
     shouldDouble = !shouldDouble;
   }
   return sum % 10 === 0;
+}
+
+/** Valida si es un UUID válido. */
+export function isUUID(value) {
+  return typeof value === 'string' && UUID_RE.test(value);
+}
+
+/** Valida si es una dirección IP (v4 o v6) válida. */
+export function isIP(value) {
+  return typeof value === 'string' && IP_RE.test(value);
+}
+
+/** Valida si es un color hexadecimal válido. */
+export function isHexColor(value) {
+  return typeof value === 'string' && HEXCOLOR_RE.test(value);
+}
+
+/** Valida si un string es JSON válido. */
+export function isJSON(value) {
+  if (typeof value !== 'string') return false;
+  try {
+    JSON.parse(value);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+/** Valida si es una contraseña fuerte (min 8 chars, 1 mayúscula, 1 minúscula, 1 número, 1 símbolo). */
+export function isStrongPassword(value) {
+  return typeof value === 'string' && STRONG_PASSWORD_RE.test(value);
 }
 
 /** Valida que el valor sea igual a otro (útil para confirmar contraseñas). */

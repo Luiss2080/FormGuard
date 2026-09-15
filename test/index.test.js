@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { required, isEmail, minLength, maxLength, isUrl, isNumeric, match, isPhoneBolivia, validateForm, validateFormAsync, isDate, isAlphanumeric, min, max, isCreditCard, maxFileSize, allowedFileTypes } from '../src/index.js';
+import { required, isEmail, minLength, maxLength, isUrl, isNumeric, match, isPhoneBolivia, validateForm, validateFormAsync, isDate, isAlphanumeric, min, max, isCreditCard, maxFileSize, allowedFileTypes, isUUID, isIP, isHexColor, isJSON, isStrongPassword } from '../src/index.js';
 
 test('required rechaza vacío y espacios', () => {
   assert.equal(required('hola'), true);
@@ -128,4 +128,23 @@ test('file validation', () => {
   
   assert.equal(allowedFileTypes(fakeFile, ['image/jpeg', 'image/png']), true);
   assert.equal(allowedFileTypes(fakeFile, ['application/pdf']), false);
+});
+
+test('Ultimate validators', () => {
+  assert.equal(isUUID('550e8400-e29b-41d4-a716-446655440000'), true);
+  assert.equal(isUUID('invalid-uuid'), false);
+  
+  assert.equal(isIP('192.168.1.1'), true);
+  assert.equal(isIP('2001:0db8:85a3:0000:0000:8a2e:0370:7334'), true);
+  assert.equal(isIP('999.999.999.999'), false);
+  
+  assert.equal(isHexColor('#FF5733'), true);
+  assert.equal(isHexColor('FF5733'), true);
+  assert.equal(isHexColor('#zzz'), false);
+  
+  assert.equal(isJSON('{"name":"luis"}'), true);
+  assert.equal(isJSON('{name:"luis"}'), false);
+  
+  assert.equal(isStrongPassword('Abcdef1@'), true);
+  assert.equal(isStrongPassword('password'), false);
 });
