@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { required, isEmail, minLength, maxLength, isUrl, isNumeric, match, isPhoneBolivia, validateForm, validateFormAsync } from '../src/index.js';
+import { required, isEmail, minLength, maxLength, isUrl, isNumeric, match, isPhoneBolivia, validateForm, validateFormAsync, isDate, isAlphanumeric, min, max, isCreditCard } from '../src/index.js';
 
 test('required rechaza vacío y espacios', () => {
   assert.equal(required('hola'), true);
@@ -65,6 +65,49 @@ test('isNumeric valida numeros', () => {
 test('match comprueba igualdad estricta', () => {
   assert.equal(match('pass', 'pass'), true);
   assert.equal(match('pass', 'fail'), false);
+});
+
+test('min y max evaluan numeros', () => {
+  assert.equal(min('10', 5), true);
+  assert.equal(min('4', 5), false);
+  assert.equal(max('10', 15), true);
+  assert.equal(max('20', 15), false);
+});
+
+test('isAlphanumeric', () => {
+  assert.equal(isAlphanumeric('hola123'), true);
+  assert.equal(isAlphanumeric('hola 123'), false);
+  assert.equal(isAlphanumeric('hola!'), false);
+});
+
+test('isDate valida fechas yyyy-mm-dd', () => {
+  assert.equal(isDate('2024-02-29'), true); // bisiesto
+  assert.equal(isDate('2023-02-29'), false);
+  assert.equal(isDate('10-10-2020'), false);
+});
+
+test('isCreditCard algoritmo luhn', () => {
+  assert.equal(isCreditCard('4111111111111111'), true); // Test Luhn Visa
+  assert.equal(isCreditCard('4111111111111112'), false);
+});
+
+test('validateForm soporta arreglos de reglas y allErrors', () => {
+  const data = { age: '15' };
+  const rules = {
+    age: [
+      (v) => isNumeric(v) || 'Debe ser numero',
+      (v) => min(v, 18) || 'Mayor de edad'
+    ]
+  };
+  const { valid, errors } = validateForm(data, rules, { allErrors: true });
+  assert.equal(valid, false);
+  assert.equal(errors.age.length, 1);
+  assert.equal(errors.age[0], 'Mayor de edad');
+  
+  // Testear fallando ambas
+  const data2 = { age: 'abc' };
+  const { errors: e2 } = validateForm(data2, rules, { allErrors: true });
+  assert.equal(e2.age.length, 2);
 });
 
 test('validateFormAsync maneja promesas', async () => {

@@ -20,6 +20,21 @@
   --radius-lg: 24px;
 }
 
+body.light-mode {
+  --bg-main: #f8fafc;
+  --bg-card: rgba(255, 255, 255, 0.8);
+  --bg-input: rgba(0, 0, 0, 0.03);
+  
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  
+  --border: rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .input-field {
+  color: var(--text-main);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -294,4 +309,77 @@ h1, h2, h3, h4 {
 
 .strength-weak { background: var(--error); width: 33%; }
 .strength-medium { background: #f59e0b; width: 66%; }
-.strength-strong { background: var(--success); width: 100%; }
+/* Toast */
+.toast-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  z-index: 100;
+}
+
+.toast {
+  background: var(--bg-card);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  animation: slideInRight 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Wizard */
+.wizard-progress {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.wizard-progress::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--border);
+  z-index: -1;
+  transform: translateY(-50%);
+}
+
+.wizard-step {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-main);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: var(--text-muted);
+  transition: all 0.3s;
+}
+
+.wizard-step.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.wizard-step.completed {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}

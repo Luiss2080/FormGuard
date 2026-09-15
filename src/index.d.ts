@@ -12,8 +12,17 @@ export declare function minLength(value: any, min: number): boolean;
 export declare function maxLength(value: any, max: number): boolean;
 export declare function isUrl(value: any): boolean;
 export declare function isNumeric(value: any): boolean;
+export declare function min(value: any, minVal: number): boolean;
+export declare function max(value: any, maxVal: number): boolean;
+export declare function isAlphanumeric(value: any): boolean;
+export declare function isDate(value: any): boolean;
+export declare function isCreditCard(value: any): boolean;
 export declare function match(value: any, matchWith: any): boolean;
 export declare function isPhoneBolivia(value: any): boolean;
 
-export declare function validateForm(data: Record<string, any>, rules: Record<string, ValidationRule>): ValidationResult;
-export declare function validateFormAsync(data: Record<string, any>, rules: Record<string, AsyncValidationRule>): Promise<ValidationResult>;
+export interface ValidationOptions {
+  allErrors?: boolean;
+}
+
+export declare function validateForm(data: Record<string, any>, rules: Record<string, ValidationRule | ValidationRule[]>, options?: ValidationOptions): ValidationResult;
+export declare function validateFormAsync(data: Record<string, any>, rules: Record<string, AsyncValidationRule | AsyncValidationRule[]>, options?: ValidationOptions): Promise<ValidationResult>;
