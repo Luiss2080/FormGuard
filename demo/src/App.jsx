@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { CheckCircle2, XCircle, Loader2, Sparkles, BookOpen, Layout, Moon, Sun, CreditCard, User, Bell } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { CheckCircle2, XCircle, Loader2, Sparkles, BookOpen, Layout, Moon, Sun, CreditCard, User, Info, UploadCloud, FileText } from 'lucide-react';
 import { useFormValidator } from '@luiss2080/form-validator-simple/react';
-import { required, isEmail, minLength, match, isUrl, isCreditCard, isDate, isNumeric } from '@luiss2080/form-validator-simple';
+import { required, isEmail, minLength, match, isUrl, isCreditCard, isDate, isNumeric, maxFileSize, allowedFileTypes } from '@luiss2080/form-validator-simple';
 
 function Toast({ message, type, onClose }) {
   useEffect(() => {
@@ -30,40 +30,69 @@ function PasswordStrength({ password }) {
   );
 }
 
+function Tooltip({ text }) {
+  return (
+    <span className="tooltip-container">
+      <Info size={14} style={{ color: 'var(--accent)', marginLeft: '4px' }} />
+      <span className="tooltip-text">{text}</span>
+    </span>
+  );
+}
+
 function WizardForm({ onComplete }) {
   const [step, setStep] = useState(1);
+  const fileInputRef = useRef(null);
+
   const { values, errors, handleChange, validate } = useFormValidator(
-    { name: '', dob: '', cc: '' },
+    { name: '', dob: '', cc: '', document: null },
     {
       name: v => required(v) || 'Requerido',
       dob: v => isDate(v) || 'Fecha inválida (YYYY-MM-DD)',
-      cc: v => isCreditCard(v) || 'Tarjeta inválida (Luhn)'
+      cc: v => isCreditCard(v) || 'Tarjeta inválida (Luhn)',
+      document: [
+        v => required(v) || 'Debes subir un archivo',
+        v => maxFileSize(v, 2) || 'El archivo excede los 2MB',
+        v => allowedFileTypes(v, ['image/jpeg', 'image/png', 'application/pdf']) || 'Solo JPG, PNG o PDF'
+      ]
     }
   );
 
   const nextStep = async () => {
-    // Validate current step
     let isValid = false;
     if (step === 1) isValid = required(values.name) === true;
     if (step === 2) isValid = isDate(values.dob) === true;
     
     if (isValid) setStep(s => s + 1);
-    else await validate(); // trigger errors visually
+    else await validate(); 
   };
 
   const submit = async () => {
     if (await validate()) onComplete();
   };
 
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleChange('document', e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileSelect = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleChange('document', e.target.files[0]);
+    }
+  };
+
   return (
     <div className="glass-panel animate-fade-in" style={{ padding: '2rem' }}>
       <h2>Flujo Multi-paso (Wizard)</h2>
-      <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Valida porciones de un formulario antes de avanzar.</p>
+      <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Valida porciones de un formulario y adjunta archivos.</p>
       
       <div className="wizard-progress">
         <div className={`wizard-step ${step >= 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`}>1</div>
         <div className={`wizard-step ${step >= 2 ? 'active' : ''} ${step > 2 ? 'completed' : ''}`}>2</div>
-        <div className={`wizard-step ${step >= 3 ? 'active' : ''}`}>3</div>
+        <div className={`wizard-step ${step >= 3 ? 'active' : ''} ${step > 3 ? 'completed' : ''}`}>3</div>
+        <div className={`wizard-step ${step >= 4 ? 'active' : ''}`}>4</div>
       </div>
 
       {step === 1 && (
@@ -94,12 +123,44 @@ function WizardForm({ onComplete }) {
       {step === 3 && (
         <div className="animate-fade-in">
           <div className="input-group">
-            <label className="input-label">Tarjeta de Crédito <CreditCard size={14} /></label>
+            <label className="input-label">Identificación (Máx 2MB) <Tooltip text="Sube tu DNI o pasaporte en formato PDF, JPG o PNG." /></label>
+            <div 
+              className={`dropzone ${errors.document ? 'has-error' : (values.document && !errors.document ? 'has-success' : '')}`}
+              onDragOver={e => e.preventDefault()}
+              onDrop={handleFileDrop}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileSelect} accept=".pdf,.jpg,.jpeg,.png" />
+              {values.document ? (
+                <>
+                  <FileText size={48} style={{ color: 'var(--accent)', marginBottom: '1rem' }} />
+                  <p>{values.document.name}</p>
+                </>
+              ) : (
+                <>
+                  <UploadCloud size={48} style={{ color: 'var(--text-muted)', marginBottom: '1rem' }} />
+                  <p>Arrastra tu archivo aquí o haz clic para subir</p>
+                </>
+              )}
+            </div>
+            {errors.document && <span className="error-text">{errors.document}</span>}
+          </div>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button className="btn" style={{ background: 'var(--bg-input)', color: 'var(--text-main)' }} onClick={() => setStep(2)}>Atrás</button>
+            <button className="btn btn-primary" onClick={nextStep}>Siguiente</button>
+          </div>
+        </div>
+      )}
+
+      {step === 4 && (
+        <div className="animate-fade-in">
+          <div className="input-group">
+            <label className="input-label">Tarjeta de Crédito <CreditCard size={14} /> <Tooltip text="Validamos usando el algoritmo matemático de Luhn." /></label>
             <input className="input-field" value={values.cc} onChange={e => handleChange('cc', e.target.value)} placeholder="4111111111111111" />
             {errors.cc && <span className="error-text">{errors.cc}</span>}
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
-            <button className="btn" style={{ background: 'var(--bg-input)', color: 'var(--text-main)' }} onClick={() => setStep(2)}>Atrás</button>
+            <button className="btn" style={{ background: 'var(--bg-input)', color: 'var(--text-main)' }} onClick={() => setStep(3)}>Atrás</button>
             <button className="btn btn-primary" onClick={submit}>Finalizar</button>
           </div>
         </div>
@@ -156,6 +217,12 @@ function App() {
     }
   };
 
+  const getInputStatus = (field) => {
+    if (errors[field]) return 'is-invalid';
+    if (values[field] && !errors[field]) return 'is-valid';
+    return '';
+  };
+
   return (
     <div className="container">
       <button 
@@ -194,23 +261,23 @@ function App() {
               <h2 style={{ marginBottom: '1.5rem' }}>Registro Estándar</h2>
               <form onSubmit={handleSubmit}>
                 <div className="input-group">
-                  <label className="input-label">Nombre Completo</label>
-                  <input className="input-field" value={values.name} onChange={e => handleChange('name', e.target.value)} />
+                  <label className="input-label">Nombre Completo <Tooltip text="Tu nombre real que aparecerá en tu perfil público." /></label>
+                  <input className={`input-field ${getInputStatus('name')}`} value={values.name} onChange={e => handleChange('name', e.target.value)} />
                   {errors.name && <span className="error-text">{errors.name}</span>}
                 </div>
                 <div className="input-group">
                   <label className="input-label">Correo Electrónico</label>
-                  <input className="input-field" value={values.email} onChange={e => handleChange('email', e.target.value)} />
+                  <input className={`input-field ${getInputStatus('email')}`} value={values.email} onChange={e => handleChange('email', e.target.value)} />
                   {errors.email && <span className="error-text">{errors.email}</span>}
                 </div>
                 <div className="input-group">
-                  <label className="input-label">Usuario (asíncrono: 'admin')</label>
-                  <input className="input-field" value={values.username} onChange={e => handleChange('username', e.target.value)} />
+                  <label className="input-label">Usuario (asíncrono: 'admin') <Tooltip text="Validamos en tiempo real contra nuestra 'API' para asegurar disponibilidad." /></label>
+                  <input className={`input-field ${getInputStatus('username')}`} value={values.username} onChange={e => handleChange('username', e.target.value)} />
                   {errors.username && <span className="error-text">{errors.username}</span>}
                 </div>
                 <div className="input-group">
                   <label className="input-label">Contraseña</label>
-                  <input className="input-field" type="password" value={values.password} onChange={e => handleChange('password', e.target.value)} />
+                  <input className={`input-field ${getInputStatus('password')}`} type="password" value={values.password} onChange={e => handleChange('password', e.target.value)} />
                   <PasswordStrength password={values.password} />
                   {errors.password && <span className="error-text">{errors.password}</span>}
                 </div>
@@ -218,6 +285,28 @@ function App() {
                   {isSubmitting ? <><Loader2 className="animate-spin" size={18} /> Validando API...</> : 'Registrarse Ahora'}
                 </button>
               </form>
+            </div>
+
+            <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column' }}>
+              <h2 style={{ marginBottom: '1.5rem' }}>Magia bajo el capó 🧙‍♂️</h2>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>Observa lo simple que es implementar reglas complejas con nuestra librería:</p>
+              <pre style={{ background: 'rgba(0,0,0,0.5)', padding: '1.5rem', borderRadius: '8px', overflowX: 'auto', flex: 1, fontSize: '0.9rem' }}>
+                <code style={{ color: '#a78bfa' }}>
+{`import { useFormValidator } from '@luiss2080/form-validator-simple/react';
+
+const { values, errors, validate } = useFormValidator(
+  { email: '', username: '' },
+  {
+    email: v => isEmail(v) || 'Email inválido',
+    username: async v => {
+      // Regla asíncrona!
+      const exists = await checkDB(v);
+      return !exists || 'Usuario en uso';
+    }
+  }
+);`}
+                </code>
+              </pre>
             </div>
           </div>
         )}

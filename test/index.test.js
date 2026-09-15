@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { required, isEmail, minLength, maxLength, isUrl, isNumeric, match, isPhoneBolivia, validateForm, validateFormAsync, isDate, isAlphanumeric, min, max, isCreditCard } from '../src/index.js';
+import { required, isEmail, minLength, maxLength, isUrl, isNumeric, match, isPhoneBolivia, validateForm, validateFormAsync, isDate, isAlphanumeric, min, max, isCreditCard, maxFileSize, allowedFileTypes } from '../src/index.js';
 
 test('required rechaza vacío y espacios', () => {
   assert.equal(required('hola'), true);
@@ -119,4 +119,13 @@ test('validateFormAsync maneja promesas', async () => {
   );
   assert.equal(valid, false);
   assert.equal(errors.username, 'Usuario ya existe');
+});
+
+test('file validation', () => {
+  const fakeFile = { size: 1024 * 1024, type: 'image/jpeg' }; // 1MB
+  assert.equal(maxFileSize(fakeFile, 2), true);
+  assert.equal(maxFileSize(fakeFile, 0.5), false);
+  
+  assert.equal(allowedFileTypes(fakeFile, ['image/jpeg', 'image/png']), true);
+  assert.equal(allowedFileTypes(fakeFile, ['application/pdf']), false);
 });
