@@ -226,16 +226,25 @@ body.light-mode .input-label {
 .input-field:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.2);
+  box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 .input-field.is-invalid {
   border-color: var(--error);
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
 .input-field.is-valid {
   border-color: var(--success);
+}
+
+/* Shake Animation */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+.error-shake {
+  animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
 }
 
 .input-icon {
@@ -286,28 +295,44 @@ body.light-mode .input-label {
   transform: none;
 }
 
-/* Modal */
+/* Modals */
 .modal-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.6);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 50;
-  animation: fadeIn 0.3s ease;
+  z-index: 1000;
 }
 
 .modal-content {
-  background: var(--bg-main);
-  border: 1px solid var(--border);
+  background: var(--bg-card);
   padding: 2rem;
   border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
   width: 90%;
-  max-width: 400px;
+  max-width: 500px;
   text-align: center;
-  animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+/* JSON Viewer */
+.json-viewer {
+  background: #1e1e1e;
+  border-radius: var(--radius);
+  padding: 1rem;
+  overflow-x: auto;
+  text-align: left;
+  font-family: monospace;
+  color: #d4d4d4;
+  margin-bottom: 1.5rem;
+  max-height: 250px;
+  overflow-y: auto;
 }
 
 @keyframes fadeIn {
