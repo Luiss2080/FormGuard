@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { CheckCircle2, XCircle, Loader2, Sparkles, BookOpen, Layout, Moon, Sun, CreditCard, User, Info, UploadCloud, FileText } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, Sparkles, BookOpen, Layout, Moon, Sun, CreditCard, User, Info, UploadCloud, FileText, Copy } from 'lucide-react';
 import { useFormValidator } from '@luiss2080/form-validator-simple/react';
-import { required, isEmail, minLength, match, isUrl, isCreditCard, isDate, isNumeric, maxFileSize, allowedFileTypes } from '@luiss2080/form-validator-simple';
+import { required, isEmail, minLength, match, isUrl, isCreditCard, isDate, isNumeric, maxFileSize, allowedFileTypes, isStrongPassword } from '@luiss2080/form-validator-simple';
 
 function Toast({ message, type, onClose }) {
   useEffect(() => {
@@ -21,7 +21,7 @@ function PasswordStrength({ password }) {
   if (!password) return null;
   let strength = 'weak';
   if (password.length > 5 && /[A-Z]/.test(password)) strength = 'medium';
-  if (password.length > 7 && /[A-Z]/.test(password) && /[0-9]/.test(password)) strength = 'strong';
+  if (isStrongPassword(password)) strength = 'strong';
   
   return (
     <div className="strength-bar">
@@ -39,12 +39,45 @@ function Tooltip({ text }) {
   );
 }
 
+function PayloadModal({ isOpen, onClose, data }) {
+  if (!isOpen) return null;
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    alert("¡Copiado al portapapeles!");
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <h3 style={{ marginBottom: '0.5rem' }}>Registro Completado 🎉</h3>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Tu payload está validado y listo para el backend:</p>
+        <pre className="json-viewer">
+          {JSON.stringify(data, null, 2)}
+        </pre>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button className="btn" style={{ background: 'var(--bg-input)', color: 'var(--text-main)', flex: 1, display: 'flex', justifyContent: 'center', gap: '0.5rem' }} onClick={copyToClipboard}>
+            <Copy size={16} /> Copiar
+          </button>
+          <button className="btn btn-primary" onClick={onClose} style={{ flex: 1 }}>
+            Aceptar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function WizardForm({ onComplete }) {
   const [step, setStep] = useState(1);
+  const [shakeFields, setShakeFields] = useState({});
   const fileInputRef = useRef(null);
 
+  // Intentar cargar progreso de localstorage
+  const initialValues = JSON.parse(localStorage.getItem('wizard_draft')) || { name: '', dob: '', cc: '', document: null };
+
   const { values, errors, handleChange, validate } = useFormValidator(
-    { name: '', dob: '', cc: '', document: null },
+    initialValues,
     {
       name: v => required(v) || 'Requerido',
       dob: v => isDate(v) || 'Fecha inválida (YYYY-MM-DD)',
@@ -57,17 +90,45 @@ function WizardForm({ onComplete }) {
     }
   );
 
+  // Autoguardado
+  useEffect(() => {
+    const draft = { ...values, document: null }; // No podemos guardar el archivo real en JSON
+    localStorage.setItem('wizard_draft', JSON.stringify(draft));
+  }, [values]);
+
+  const triggerShake = (field) => {
+    setShakeFields(prev => ({ ...prev, [field]: true }));
+    setTimeout(() => {
+      setShakeFields(prev => ({ ...prev, [field]: false }));
+    }, 300);
+  };
+
   const nextStep = async () => {
     let isValid = false;
-    if (step === 1) isValid = required(values.name) === true;
-    if (step === 2) isValid = isDate(values.dob) === true;
+    if (step === 1) {
+      isValid = required(values.name) === true;
+      if (!isValid) triggerShake('name');
+    }
+    if (step === 2) {
+      isValid = isDate(values.dob) === true;
+      if (!isValid) triggerShake('dob');
+    }
+    if (step === 3) {
+      isValid = required(values.document) === true;
+      if (!isValid) triggerShake('document');
+    }
     
     if (isValid) setStep(s => s + 1);
     else await validate(); 
   };
 
   const submit = async () => {
-    if (await validate()) onComplete();
+    if (await validate()) {
+      localStorage.removeItem('wizard_draft'); // Limpiamos progreso al finalizar
+      onComplete(values); // Enviamos payload
+    } else {
+      triggerShake('cc');
+    }
   };
 
   const handleFileDrop = (e) => {
@@ -86,7 +147,7 @@ function WizardForm({ onComplete }) {
   return (
     <div className="glass-panel animate-fade-in" style={{ padding: '2rem' }}>
       <h2>Flujo Multi-paso (Wizard)</h2>
-      <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Valida porciones de un formulario y adjunta archivos.</p>
+      <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Se guarda automáticamente tu progreso (Draft).</p>
       
       <div className="wizard-progress">
         <div className={`wizard-step ${step >= 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`}>1</div>
@@ -99,7 +160,7 @@ function WizardForm({ onComplete }) {
         <div className="animate-fade-in">
           <div className="input-group">
             <label className="input-label">Nombre <User size={14} /></label>
-            <input className="input-field" value={values.name} onChange={e => handleChange('name', e.target.value)} />
+            <input className={`input-field ${shakeFields.name ? 'error-shake' : ''}`} value={values.name} onChange={e => handleChange('name', e.target.value)} />
             {errors.name && <span className="error-text">{errors.name}</span>}
           </div>
           <button className="btn btn-primary" onClick={nextStep}>Siguiente</button>
@@ -110,7 +171,7 @@ function WizardForm({ onComplete }) {
         <div className="animate-fade-in">
           <div className="input-group">
             <label className="input-label">Fecha de Nacimiento (YYYY-MM-DD)</label>
-            <input className="input-field" value={values.dob} onChange={e => handleChange('dob', e.target.value)} placeholder="2000-01-25" />
+            <input className={`input-field ${shakeFields.dob ? 'error-shake' : ''}`} value={values.dob} onChange={e => handleChange('dob', e.target.value)} placeholder="2000-01-25" />
             {errors.dob && <span className="error-text">{errors.dob}</span>}
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
@@ -125,7 +186,7 @@ function WizardForm({ onComplete }) {
           <div className="input-group">
             <label className="input-label">Identificación (Máx 2MB) <Tooltip text="Sube tu DNI o pasaporte en formato PDF, JPG o PNG." /></label>
             <div 
-              className={`dropzone ${errors.document ? 'has-error' : (values.document && !errors.document ? 'has-success' : '')}`}
+              className={`dropzone ${errors.document ? 'has-error' : (values.document && !errors.document ? 'has-success' : '')} ${shakeFields.document ? 'error-shake' : ''}`}
               onDragOver={e => e.preventDefault()}
               onDrop={handleFileDrop}
               onClick={() => fileInputRef.current?.click()}
@@ -156,7 +217,7 @@ function WizardForm({ onComplete }) {
         <div className="animate-fade-in">
           <div className="input-group">
             <label className="input-label">Tarjeta de Crédito <CreditCard size={14} /> <Tooltip text="Validamos usando el algoritmo matemático de Luhn." /></label>
-            <input className="input-field" value={values.cc} onChange={e => handleChange('cc', e.target.value)} placeholder="4111111111111111" />
+            <input className={`input-field ${shakeFields.cc ? 'error-shake' : ''}`} value={values.cc} onChange={e => handleChange('cc', e.target.value)} placeholder="4111111111111111" />
             {errors.cc && <span className="error-text">{errors.cc}</span>}
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
@@ -173,6 +234,8 @@ function App() {
   const [activeTab, setActiveTab] = useState('demo');
   const [toasts, setToasts] = useState([]);
   const [theme, setTheme] = useState('dark');
+  const [shakeFields, setShakeFields] = useState({});
+  const [payloadModal, setPayloadModal] = useState({ open: false, data: null });
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -202,18 +265,28 @@ function App() {
         if (!minLength(v, 4)) return 'Mínimo 4 caracteres';
         return await isUsernameAvailable(v);
       },
-      password: v => minLength(v, 6) || 'La contraseña debe tener al menos 6 caracteres',
+      password: v => isStrongPassword(v) || 'Debe incluir minúsculas, mayúsculas, números y símbolos (mín 8 chars)',
       confirm: v => (required(v) && match(v, values.password)) || 'Las contraseñas no coinciden'
     }
   );
+
+  const triggerShake = (field) => {
+    setShakeFields(prev => ({ ...prev, [field]: true }));
+    setTimeout(() => {
+      setShakeFields(prev => ({ ...prev, [field]: false }));
+    }, 300);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const isValid = await validate(true);
     if (isValid) {
-      addToast('¡Registro Exitoso!', 'success');
+      setPayloadModal({ open: true, data: values });
     } else {
       addToast('Revisa los errores en el formulario', 'error');
+      // Hacer temblar el primer campo con error
+      const firstErrorField = Object.keys(errors)[0];
+      if (firstErrorField) triggerShake(firstErrorField);
     }
   };
 
@@ -221,6 +294,10 @@ function App() {
     if (errors[field]) return 'is-invalid';
     if (values[field] && !errors[field]) return 'is-valid';
     return '';
+  };
+
+  const getShakeClass = (field) => {
+    return shakeFields[field] ? 'error-shake' : '';
   };
 
   return (
@@ -262,22 +339,22 @@ function App() {
               <form onSubmit={handleSubmit}>
                 <div className="input-group">
                   <label className="input-label">Nombre Completo <Tooltip text="Tu nombre real que aparecerá en tu perfil público." /></label>
-                  <input className={`input-field ${getInputStatus('name')}`} value={values.name} onChange={e => handleChange('name', e.target.value)} />
+                  <input className={`input-field ${getInputStatus('name')} ${getShakeClass('name')}`} value={values.name} onChange={e => handleChange('name', e.target.value)} />
                   {errors.name && <span className="error-text">{errors.name}</span>}
                 </div>
                 <div className="input-group">
                   <label className="input-label">Correo Electrónico</label>
-                  <input className={`input-field ${getInputStatus('email')}`} value={values.email} onChange={e => handleChange('email', e.target.value)} />
+                  <input className={`input-field ${getInputStatus('email')} ${getShakeClass('email')}`} value={values.email} onChange={e => handleChange('email', e.target.value)} />
                   {errors.email && <span className="error-text">{errors.email}</span>}
                 </div>
                 <div className="input-group">
                   <label className="input-label">Usuario (asíncrono: 'admin') <Tooltip text="Validamos en tiempo real contra nuestra 'API' para asegurar disponibilidad." /></label>
-                  <input className={`input-field ${getInputStatus('username')}`} value={values.username} onChange={e => handleChange('username', e.target.value)} />
+                  <input className={`input-field ${getInputStatus('username')} ${getShakeClass('username')}`} value={values.username} onChange={e => handleChange('username', e.target.value)} />
                   {errors.username && <span className="error-text">{errors.username}</span>}
                 </div>
                 <div className="input-group">
-                  <label className="input-label">Contraseña</label>
-                  <input className={`input-field ${getInputStatus('password')}`} type="password" value={values.password} onChange={e => handleChange('password', e.target.value)} />
+                  <label className="input-label">Contraseña <Tooltip text="Regla isStrongPassword: requiere minúsculas, mayúsculas, números y símbolos" /></label>
+                  <input className={`input-field ${getInputStatus('password')} ${getShakeClass('password')}`} type="password" value={values.password} onChange={e => handleChange('password', e.target.value)} />
                   <PasswordStrength password={values.password} />
                   {errors.password && <span className="error-text">{errors.password}</span>}
                 </div>
@@ -313,7 +390,10 @@ const { values, errors, validate } = useFormValidator(
 
         {activeTab === 'wizard' && (
           <div className="grid-2">
-            <WizardForm onComplete={() => addToast('Wizard completado con éxito', 'success')} />
+            <WizardForm onComplete={(payload) => {
+              addToast('Wizard completado', 'success');
+              setPayloadModal({ open: true, data: { ...payload, document: payload.document ? payload.document.name : null } });
+            }} />
           </div>
         )}
 
@@ -324,6 +404,12 @@ const { values, errors, validate } = useFormValidator(
           <Toast key={t.id} message={t.message} type={t.type} onClose={() => setToasts(ts => ts.filter(x => x.id !== t.id))} />
         ))}
       </div>
+
+      <PayloadModal 
+        isOpen={payloadModal.open} 
+        data={payloadModal.data} 
+        onClose={() => setPayloadModal({ open: false, data: null })} 
+      />
     </div>
   );
 }

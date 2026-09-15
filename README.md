@@ -125,11 +125,16 @@ La librería viene con un set robusto de validadores listos para usar:
 - `min(value, minVal)`: Valor numérico mayor o igual.
 - `max(value, maxVal)`: Valor numérico menor o igual.
 - `isAlphanumeric(value)`: Solo letras y números.
+- `isStrongPassword(value)`: Contraseñas con mayúsculas, minúsculas, números y símbolos.
 
 ### Formatos Avanzados
 - `isUrl(value)`: Valida enlaces y dominios web.
 - `isDate(value)`: Valida fechas reales en formato `YYYY-MM-DD` (incluso años bisiestos).
-- `isCreditCard(value)`: Valida tarjetas bancarias (Visa, Mastercard, etc.) usando el poderoso **Algoritmo de Luhn**.
+- `isCreditCard(value)`: Valida tarjetas bancarias usando el poderoso **Algoritmo de Luhn**.
+- `isUUID(value)`: Identificadores universales (ej. bases de datos).
+- `isIP(value)`: Direcciones IPv4 e IPv6.
+- `isHexColor(value)`: Colores hexadecimales (`#fff`, `#FF5733`).
+- `isJSON(value)`: Validar cadenas de texto JSON.
 - `isPhoneBolivia(value)`: Regla regional para celulares de 8 dígitos.
 
 ### 📁 Archivos (Files)
