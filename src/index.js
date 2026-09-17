@@ -1,4 +1,10 @@
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// El dominio se valida como una lista de "etiquetas" separadas por un solo
+// punto, cada una sin puntos/espacios/@, y un TLD final de al menos 2 letras.
+// Esto evita falsos positivos como "user@example..com" o "user@example.1"
+// que la versión anterior (un solo `[^\s@]+` genérico para todo el dominio)
+// aceptaba por error, sin dejar de admitir dominios internacionalizados
+// (unicode) y plus-addressing en la parte local.
+const EMAIL_RE = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)*\.[a-zA-Z]{2,}$/;
 // Nota: requiere el flag `i`, sin él la regex solo aceptaba protocolo y
 // dominio en minúscula, rechazando URLs igualmente válidas como
 // "https://Google.com" o "HTTPS://example.com".
