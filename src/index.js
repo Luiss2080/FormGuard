@@ -10,9 +10,21 @@ const STRONG_PASSWORD_RE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-
 // Celulares bolivianos: 8 dígitos, empiezan con 6 o 7 (Entel/Tigo/Viva).
 const TELEFONO_BOLIVIA_RE = /^[67]\d{7}$/;
 
-/** Valida que un campo no esté vacío (ignorando espacios). */
+/**
+ * Valida que un campo tenga un valor presente.
+ *
+ * No solo maneja strings: `0` y `false` son valores legítimos (un input
+ * numérico en 0 o un checkbox sin marcar) y no deben tratarse como "vacíos".
+ * Solo se consideran vacíos: `null`/`undefined`, strings en blanco (o con
+ * solo espacios) y arreglos sin elementos (ej. un multi-select).
+ */
 export function required(value) {
-  return typeof value === 'string' && value.trim().length > 0;
+  if (value === null || value === undefined) return false;
+  if (typeof value === 'string') return value.trim().length > 0;
+  if (typeof value === 'number') return !Number.isNaN(value);
+  if (typeof value === 'boolean') return true;
+  if (Array.isArray(value)) return value.length > 0;
+  return true;
 }
 
 /** Valida formato de email básico. */

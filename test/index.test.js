@@ -8,6 +8,24 @@ test('required rechaza vacío y espacios', () => {
   assert.equal(required(''), false);
 });
 
+test('required trata 0 y false como valores presentes, no vacíos', () => {
+  // Bug: antes required() solo aceptaba strings, así que un input numérico
+  // en 0 (ej. cantidad = 0) o un checkbox sin marcar (false) fallaban
+  // aunque el usuario sí completó el campo.
+  assert.equal(required(0), true);
+  assert.equal(required(false), true);
+  assert.equal(required(true), true);
+  assert.equal(required(NaN), false);
+});
+
+test('required maneja null, undefined y arreglos', () => {
+  assert.equal(required(null), false);
+  assert.equal(required(undefined), false);
+  assert.equal(required([]), false);
+  assert.equal(required([1]), true);
+  assert.equal(required(['']), true); // el arreglo tiene un elemento, aunque vacío
+});
+
 test('isEmail valida formato básico', () => {
   assert.equal(isEmail('a@b.com'), true);
   assert.equal(isEmail('no-es-email'), false);
