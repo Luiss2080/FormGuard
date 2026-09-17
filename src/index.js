@@ -5,7 +5,10 @@
 // aceptaba por error, sin dejar de admitir dominios internacionalizados
 // (unicode) y plus-addressing en la parte local.
 const EMAIL_RE = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)*\.[a-zA-Z]{2,}$/;
-const URL_RE = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+// Nota: requiere el flag `i`, sin él la regex solo aceptaba protocolo y
+// dominio en minúscula, rechazando URLs igualmente válidas como
+// "https://Google.com" o "HTTPS://example.com".
+const URL_RE = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
 const NUMERIC_RE = /^-?\d+(\.\d+)?$/;
 const ALPHANUMERIC_RE = /^[a-zA-Z0-9]+$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD
@@ -16,9 +19,21 @@ const STRONG_PASSWORD_RE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-
 // Celulares bolivianos: 8 dígitos, empiezan con 6 o 7 (Entel/Tigo/Viva).
 const TELEFONO_BOLIVIA_RE = /^[67]\d{7}$/;
 
-/** Valida que un campo no esté vacío (ignorando espacios). */
+/**
+ * Valida que un campo tenga un valor presente.
+ *
+ * No solo maneja strings: `0` y `false` son valores legítimos (un input
+ * numérico en 0 o un checkbox sin marcar) y no deben tratarse como "vacíos".
+ * Solo se consideran vacíos: `null`/`undefined`, strings en blanco (o con
+ * solo espacios) y arreglos sin elementos (ej. un multi-select).
+ */
 export function required(value) {
-  return typeof value === 'string' && value.trim().length > 0;
+  if (value === null || value === undefined) return false;
+  if (typeof value === 'string') return value.trim().length > 0;
+  if (typeof value === 'number') return !Number.isNaN(value);
+  if (typeof value === 'boolean') return true;
+  if (Array.isArray(value)) return value.length > 0;
+  return true;
 }
 
 /** Valida formato de email básico. */
@@ -26,9 +41,16 @@ export function isEmail(value) {
   return typeof value === 'string' && EMAIL_RE.test(value.trim());
 }
 
-/** Valida que un texto tenga al menos `min` caracteres (sin contar espacios extremos). */
+/**
+ * Valida que un texto tenga al menos `min` caracteres (sin contar espacios
+ * extremos). Acepta números y booleanos igual que `maxLength` (se convierten
+ * con `String()` antes de medir), para que ambas reglas de longitud se
+ * comporten de forma consistente sin importar el tipo del valor original
+ * (ej. un input numérico controlado que entrega `123` en vez de `'123'`).
+ */
 export function minLength(value, min) {
-  return typeof value === 'string' && value.trim().length >= min;
+  if (value === undefined || value === null) return false;
+  return String(value).trim().length >= min;
 }
 
 /** Valida que un texto tenga como máximo `max` caracteres. */
@@ -125,6 +147,18 @@ export function isStrongPassword(value) {
 /** Valida que el valor sea igual a otro (útil para confirmar contraseñas). */
 export function match(value, matchWith) {
   return value === matchWith;
+}
+
+/**
+ * Valida que el valor cumpla una expresión regular arbitraria. Útil para
+ * reglas de negocio que no ameritan su propio validador dedicado
+ * (códigos postales, slugs, formatos internos, etc.).
+ *
+ * Ej: pattern(sku, /^[A-Z]{3}-\d{4}$/)
+ */
+export function pattern(value, regex) {
+  if (typeof value !== 'string') return false;
+  return regex.test(value);
 }
 
 /** Valida que el archivo no supere el tamaño máximo (en MB). */

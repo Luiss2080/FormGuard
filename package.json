@@ -4,12 +4,24 @@
   "description": "Validador de formularios simple y gratuito: required, email, minLength, sin dependencias",
   "type": "module",
   "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "sideEffects": false,
   "exports": {
-    ".": "./src/index.js",
-    "./react": "./src/react/index.js"
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    },
+    "./react": {
+      "types": "./src/react/index.d.ts",
+      "import": "./src/react/index.js",
+      "default": "./src/react/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "files": ["src"],
   "scripts": { "test": "node --test test/*.test.js" },
+  "keywords": ["form", "validation", "validator", "email", "required", "typescript", "react", "zero-dependency"],
   "license": "MIT",
   "author": "Luis Rocha (Luiss2080)",
   "repository": { "type": "git", "url": "git+https://github.com/Luiss2080/form-validator-simple.git" },

@@ -1,11 +1,29 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { required, isEmail, minLength, maxLength, isUrl, isNumeric, match, isPhoneBolivia, validateForm, validateFormAsync, isDate, isAlphanumeric, min, max, isCreditCard, maxFileSize, allowedFileTypes, isUUID, isIP, isHexColor, isJSON, isStrongPassword } from '../src/index.js';
+import { required, isEmail, minLength, maxLength, isUrl, isNumeric, match, pattern, isPhoneBolivia, validateForm, validateFormAsync, isDate, isAlphanumeric, min, max, isCreditCard, maxFileSize, allowedFileTypes, isUUID, isIP, isHexColor, isJSON, isStrongPassword } from '../src/index.js';
 
 test('required rechaza vacío y espacios', () => {
   assert.equal(required('hola'), true);
   assert.equal(required('   '), false);
   assert.equal(required(''), false);
+});
+
+test('required trata 0 y false como valores presentes, no vacíos', () => {
+  // Bug: antes required() solo aceptaba strings, así que un input numérico
+  // en 0 (ej. cantidad = 0) o un checkbox sin marcar (false) fallaban
+  // aunque el usuario sí completó el campo.
+  assert.equal(required(0), true);
+  assert.equal(required(false), true);
+  assert.equal(required(true), true);
+  assert.equal(required(NaN), false);
+});
+
+test('required maneja null, undefined y arreglos', () => {
+  assert.equal(required(null), false);
+  assert.equal(required(undefined), false);
+  assert.equal(required([]), false);
+  assert.equal(required([1]), true);
+  assert.equal(required(['']), true); // el arreglo tiene un elemento, aunque vacío
 });
 
 test('isEmail valida formato básico', () => {
@@ -50,6 +68,17 @@ test('minLength respeta el mínimo', () => {
   assert.equal(minLength('hi', 3), false);
 });
 
+test('minLength coacciona números/booleanos igual que maxLength, y rechaza null/undefined', () => {
+  // Bug: minLength exigía typeof === 'string', así que un valor numérico
+  // (ej. de un <input type="number">) siempre fallaba aunque maxLength sí
+  // lo aceptaba vía String(value) — comportamiento inconsistente entre las
+  // dos reglas de longitud.
+  assert.equal(minLength(123, 2), true);
+  assert.equal(minLength(1, 2), false);
+  assert.equal(minLength(null, 1), false);
+  assert.equal(minLength(undefined, 1), false);
+});
+
 test('isPhoneBolivia acepta celulares válidos con o sin prefijo/formato', () => {
   assert.equal(isPhoneBolivia('71234567'), true);
   assert.equal(isPhoneBolivia('+59171234567'), true);
@@ -87,6 +116,15 @@ test('isUrl valida formato de url', () => {
   assert.equal(isUrl('not-a-url'), false);
 });
 
+test('isUrl ignora mayúsculas/minúsculas en protocolo y dominio', () => {
+  // Bug: la regex no tenía el flag "i", así que un dominio con mayúsculas
+  // (frecuente por autocapitalización del teclado, ej. "Google.com") o un
+  // protocolo en mayúsculas ("HTTPS://") se rechazaban como URL inválida.
+  assert.equal(isUrl('https://Google.com'), true);
+  assert.equal(isUrl('HTTPS://example.com'), true);
+  assert.equal(isUrl('https://Example.COM/Path'), true);
+});
+
 test('isNumeric valida numeros', () => {
   assert.equal(isNumeric('123'), true);
   assert.equal(isNumeric('-123.45'), true);
@@ -97,6 +135,14 @@ test('isNumeric valida numeros', () => {
 test('match comprueba igualdad estricta', () => {
   assert.equal(match('pass', 'pass'), true);
   assert.equal(match('pass', 'fail'), false);
+});
+
+test('pattern valida contra una expresión regular arbitraria', () => {
+  const sku = /^[A-Z]{3}-\d{4}$/;
+  assert.equal(pattern('ABC-1234', sku), true);
+  assert.equal(pattern('abc-1234', sku), false);
+  assert.equal(pattern('ABC-12', sku), false);
+  assert.equal(pattern(1234, sku), false); // no-string
 });
 
 test('min y max evaluan numeros', () => {
