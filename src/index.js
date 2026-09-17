@@ -1,5 +1,8 @@
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const URL_RE = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+// Nota: requiere el flag `i`, sin él la regex solo aceptaba protocolo y
+// dominio en minúscula, rechazando URLs igualmente válidas como
+// "https://Google.com" o "HTTPS://example.com".
+const URL_RE = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
 const NUMERIC_RE = /^-?\d+(\.\d+)?$/;
 const ALPHANUMERIC_RE = /^[a-zA-Z0-9]+$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD

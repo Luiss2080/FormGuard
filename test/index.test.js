@@ -84,6 +84,15 @@ test('isUrl valida formato de url', () => {
   assert.equal(isUrl('not-a-url'), false);
 });
 
+test('isUrl ignora mayúsculas/minúsculas en protocolo y dominio', () => {
+  // Bug: la regex no tenía el flag "i", así que un dominio con mayúsculas
+  // (frecuente por autocapitalización del teclado, ej. "Google.com") o un
+  // protocolo en mayúsculas ("HTTPS://") se rechazaban como URL inválida.
+  assert.equal(isUrl('https://Google.com'), true);
+  assert.equal(isUrl('HTTPS://example.com'), true);
+  assert.equal(isUrl('https://Example.COM/Path'), true);
+});
+
 test('isNumeric valida numeros', () => {
   assert.equal(isNumeric('123'), true);
   assert.equal(isNumeric('-123.45'), true);
