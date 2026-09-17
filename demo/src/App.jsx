@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CheckCircle2, XCircle, Loader2, Sparkles, BookOpen, Layout, Moon, Sun, CreditCard, User, Info, UploadCloud, FileText, Copy } from 'lucide-react';
-import { useFormValidator } from '@luiss2080/form-validator-simple/react';
-import { required, isEmail, minLength, match, isUrl, isCreditCard, isDate, isNumeric, maxFileSize, allowedFileTypes, isStrongPassword } from '@luiss2080/form-validator-simple';
+import { useFormValidator } from 'formguard/react';
+import { required, isEmail, minLength, match, isUrl, isCreditCard, isDate, isNumeric, maxFileSize, allowedFileTypes, isStrongPassword } from 'formguard';
 
 function Toast({ message, type, onClose }) {
   useEffect(() => {
@@ -369,7 +369,7 @@ function App() {
               <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>Observa lo simple que es implementar reglas complejas con nuestra librería:</p>
               <pre style={{ background: 'rgba(0,0,0,0.5)', padding: '1.5rem', borderRadius: '8px', overflowX: 'auto', flex: 1, fontSize: '0.9rem' }}>
                 <code style={{ color: '#a78bfa' }}>
-{`import { useFormValidator } from '@luiss2080/form-validator-simple/react';
+{`import { useFormValidator } from 'formguard/react';
 
 const { values, errors, validate } = useFormValidator(
   { email: '', username: '' },

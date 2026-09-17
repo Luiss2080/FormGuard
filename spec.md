@@ -1,7 +1,7 @@
-# Especificación (Spec) - @luiss2080/form-validator-simple
+# Especificación (Spec) - FormGuard (antes @luiss2080/form-validator-simple)
 
 ## 1. Contexto y Objetivos
-`@luiss2080/form-validator-simple` es una librería de validación de formularios ultra-ligera y sin dependencias. El objetivo de esta evolución es prepararla para entornos de producción modernos, añadiendo tipado (TypeScript), más reglas de uso común, validación asíncrona, y wrappers comerciales (React), manteniendo siempre su peso casi nulo y sin dependencias externas.
+**FormGuard** es una librería de validación de formularios ultra-ligera y sin dependencias. El objetivo de esta evolución es prepararla para entornos de producción modernos, añadiendo tipado (TypeScript), más reglas de uso común, validación asíncrona, y wrappers comerciales (React), manteniendo siempre su peso casi nulo y sin dependencias externas.
 
 ## 2. Historias de Usuario
 - **HU1**: Como desarrollador frontend, quiero tener autocompletado y validación de tipos al usar la librería en proyectos con TypeScript.
@@ -17,13 +17,14 @@
 - **RF-5**: SIEMPRE que la librería sea consumida, el tamaño del core DEBE seguir siendo minúsculo y sin dependencias externas en `package.json`.
 
 ## 4. Casos Límite y Consideraciones
-- Campos opcionales (vacíos) no deben fallar validaciones de formato (como `isEmail` o `isUrl`) a menos que también tengan la regla `required`. Esto implica que las funciones de validación como `isEmail` deben aceptar explícitamente `""` (o se asume que el usuario hace `(v) => !v || isEmail(v)` - se debe definir el estándar en la documentación).
+- **Estándar definido**: los validadores de formato (`isEmail`, `isUrl`, `isDate`, `isCreditCard`, `isHexColor`, etc.) rechazan un valor vacío (`''`, `null`, `undefined`) en vez de aceptarlo implícitamente. Un campo opcional se expresa combinando la regla explícitamente, ej. `(v) => !required(v) || isEmail(v)`. Documentado en el README, sección "Campos opcionales: `required` + validadores de formato".
+- `required` trata `0` y `false` como valores presentes (no vacíos): solo `null`/`undefined`, strings en blanco y arreglos vacíos cuentan como "sin valor".
 
 ## 5. Fuera de Alcance
 - Integraciones complejas con librerías de UI (ej: MUI, Tailwind).
 - Validaciones anidadas profundas de objetos complejos.
 
 ## 6. Criterios de Aceptación
-- [ ] Tests pasan al 100%.
-- [ ] Soporte de autocompletado en TS.
-- [ ] `useFormValidator` exportado y funcional.
+- [x] Tests pasan al 100% (`npm test`, ver `test/index.test.js`).
+- [x] Soporte de autocompletado en TS (`src/index.d.ts`, `src/react/index.d.ts`).
+- [x] `useFormValidator` exportado y funcional (`src/react/index.js`).

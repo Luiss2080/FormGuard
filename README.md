@@ -1,7 +1,7 @@
-# 🛡️ Form Validator Simple
+# 🛡️ FormGuard
 
 <div align="center">
-  <img src="https://img.shields.io/npm/v/@luiss2080/form-validator-simple?color=6d28d9&label=version" alt="Version" />
+  <img src="https://img.shields.io/npm/v/formguard?color=6d28d9&label=version" alt="Version" />
   <img src="https://img.shields.io/badge/dependencies-0-success" alt="Zero Dependencies" />
   <img src="https://img.shields.io/badge/types-TypeScript-blue" alt="TypeScript Support" />
   <br/>
@@ -10,7 +10,11 @@
 
 ---
 
-**Form Validator Simple** es una librería moderna y ligera diseñada para validar datos en JavaScript y TypeScript de forma limpia y declarativa. Nació bajo la filosofía de "cero dependencias", lo que la hace increíblemente rápida y segura. Además, incluye un hook oficial para integrarse sin esfuerzo con **React**.
+**FormGuard** (anteriormente publicado como `form-validator-simple`) es una
+librería moderna y ligera diseñada para validar datos en JavaScript y
+TypeScript de forma limpia y declarativa. Nació bajo la filosofía de "cero
+dependencias", lo que la hace increíblemente rápida y segura. Además,
+incluye un hook oficial para integrarse sin esfuerzo con **React**.
 
 ## ✨ Características Principales
 
@@ -28,13 +32,13 @@
 Usando npm:
 
 ```bash
-npm install @luiss2080/form-validator-simple
+npm install formguard
 ```
 
 Usando yarn:
 
 ```bash
-yarn add @luiss2080/form-validator-simple
+yarn add formguard
 ```
 
 ---
@@ -44,7 +48,7 @@ yarn add @luiss2080/form-validator-simple
 Nuestra API base es agnóstica y funciona en cualquier entorno de JavaScript.
 
 ```javascript
-import { validateForm, isEmail, required, minLength } from '@luiss2080/form-validator-simple';
+import { validateForm, isEmail, required, minLength } from 'formguard';
 
 const data = {
   username: 'luis',
@@ -75,8 +79,8 @@ if (!valid) {
 Si usas React, puedes importar nuestro hook exclusivo que maneja todo el estado interno (valores, errores, estado de carga) de forma reactiva.
 
 ```jsx
-import { useFormValidator } from '@luiss2080/form-validator-simple/react';
-import { required, isEmail, isCreditCard } from '@luiss2080/form-validator-simple';
+import { useFormValidator } from 'formguard/react';
+import { required, isEmail, isCreditCard } from 'formguard';
 
 function App() {
   const { values, errors, handleChange, validate, isSubmitting } = useFormValidator(
@@ -149,7 +153,7 @@ La librería viene con un set robusto de validadores listos para usar:
 Si necesitas consultar una base de datos para saber si un nombre de usuario existe, ¡puedes hacerlo! Solo devuelve una Promesa en tu regla y usa `validateFormAsync` (o simplemente llama a `validate()` si usas el hook de React).
 
 ```javascript
-import { validateFormAsync, required } from '@luiss2080/form-validator-simple';
+import { validateFormAsync, required } from 'formguard';
 
 const data = { username: 'admin' };
 const rules = {
@@ -162,6 +166,29 @@ const rules = {
 
 const { valid, errors } = await validateFormAsync(data, rules);
 ```
+
+---
+
+## 🧩 Campos opcionales: `required` + validadores de formato
+
+Los validadores de formato (`isEmail`, `isUrl`, `isDate`, `isCreditCard`,
+`isHexColor`, etc.) **rechazan un valor vacío por diseño**: `isEmail('')`
+devuelve `false`, no `true`. Si un campo es opcional, combínalo
+explícitamente con `required` en vez de asumir que el validador de formato
+lo va a "dejar pasar":
+
+```javascript
+// Campo obligatorio: basta con el validador de formato.
+email: v => isEmail(v) || 'Email inválido'
+
+// Campo opcional: solo valida el formato si el usuario escribió algo.
+sitioWeb: v => !required(v) || isUrl(v) || 'URL inválida'
+```
+
+Este es el estándar que sigue toda la librería (ver `spec.md`, sección
+"Casos Límite"): un campo vacío nunca es "válido" para un validador de
+formato por sí solo, evitando que un campo opcional sin completar pase
+silenciosamente una regla de formato con datos incompletos.
 
 ---
 

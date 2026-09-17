@@ -1,7 +1,7 @@
 {
-  "name": "@luiss2080/form-validator-simple",
+  "name": "formguard",
   "version": "1.0.0",
-  "description": "Validador de formularios simple y gratuito: required, email, minLength, sin dependencias",
+  "description": "FormGuard: validador de formularios simple y gratuito (required, email, minLength y más), sin dependencias",
   "type": "module",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -25,6 +25,5 @@
   "license": "MIT",
   "author": "Luis Rocha (Luiss2080)",
   "repository": { "type": "git", "url": "git+https://github.com/Luiss2080/form-validator-simple.git" },
-  "publishConfig": { "registry": "https://npm.pkg.github.com" },
   "engines": { "node": ">=18" }
 }
