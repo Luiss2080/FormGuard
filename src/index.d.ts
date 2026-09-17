@@ -23,6 +23,7 @@ export declare function isHexColor(value: any): boolean;
 export declare function isJSON(value: any): boolean;
 export declare function isStrongPassword(value: any): boolean;
 export declare function match(value: any, matchWith: any): boolean;
+export declare function pattern(value: any, regex: RegExp): boolean;
 export declare function maxFileSize(file: any, maxMb: number): boolean;
 export declare function allowedFileTypes(file: any, typesArray: string[]): boolean;
 export declare function isPhoneBolivia(value: any): boolean;

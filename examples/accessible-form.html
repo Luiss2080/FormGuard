@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ejemplo accesible - Form Validator Simple</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 3rem auto; padding: 0 1rem; }
+    label { display: block; font-weight: 600; margin-top: 1.25rem; }
+    input { width: 100%; padding: 0.5rem; margin-top: 0.25rem; box-sizing: border-box; }
+    input[aria-invalid="true"] { border-color: #d33; outline-color: #d33; }
+    .error-message { color: #d33; font-size: 0.875rem; margin-top: 0.25rem; }
+    button { margin-top: 1.5rem; padding: 0.5rem 1.25rem; }
+  </style>
+</head>
+<body>
+  <h1>Registro (ejemplo accesible)</h1>
+  <p>
+    Este ejemplo usa <code>form-validator-simple</code> sin ningún framework y
+    conecta cada error a su campo con <code>aria-invalid</code> y
+    <code>aria-describedby</code>, para que un lector de pantalla anuncie el
+    error apenas el usuario entra al campo o al enviar el formulario.
+  </p>
+
+  <form id="signup-form" novalidate>
+    <label for="email">Correo electrónico</label>
+    <input
+      type="email"
+      id="email"
+      name="email"
+      aria-describedby="email-error"
+      aria-invalid="false"
+    />
+    <!-- role="alert" hace que un lector de pantalla anuncie el mensaje en
+         cuanto aparece, sin que el usuario tenga que navegar hasta él. -->
+    <p class="error-message" id="email-error" role="alert"></p>
+
+    <label for="username">Usuario</label>
+    <input
+      type="text"
+      id="username"
+      name="username"
+      aria-describedby="username-error"
+      aria-invalid="false"
+    />
+    <p class="error-message" id="username-error" role="alert"></p>
+
+    <button type="submit">Crear cuenta</button>
+  </form>
+
+  <script type="module">
+    import { required, isEmail, minLength, validateForm } from '../src/index.js';
+
+    const form = document.getElementById('signup-form');
+    const fields = {
+      email: {
+        input: document.getElementById('email'),
+        error: document.getElementById('email-error'),
+        rules: (v) => isEmail(v) || 'Ingresa un correo válido, ej. nombre@dominio.com',
+      },
+      username: {
+        input: document.getElementById('username'),
+        error: document.getElementById('username-error'),
+        rules: [
+          (v) => required(v) || 'El usuario es obligatorio',
+          (v) => minLength(v, 3) || 'El usuario debe tener al menos 3 caracteres',
+        ],
+      },
+    };
+
+    /**
+     * Aplica (o limpia) un mensaje de error en un campo, manteniendo
+     * aria-invalid y el texto del elemento aria-describedby sincronizados
+     * con el estado real de la validación.
+     */
+    function setFieldError(field, message) {
+      field.input.setAttribute('aria-invalid', message ? 'true' : 'false');
+      field.error.textContent = message || '';
+    }
+
+    function validateField(name) {
+      const field = fields[name];
+      const data = { [name]: field.input.value };
+      const { errors } = validateForm(data, { [name]: field.rules });
+      setFieldError(field, errors[name]);
+      return !errors[name];
+    }
+
+    // Validar cada campo al perder el foco (blur), no en cada tecla: así no
+    // se interrumpe al usuario mientras todavía está escribiendo.
+    Object.keys(fields).forEach((name) => {
+      fields[name].input.addEventListener('blur', () => validateField(name));
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const results = Object.keys(fields).map(validateField);
+      const isValid = results.every(Boolean);
+
+      if (!isValid) {
+        // Mueve el foco al primer campo inválido: el patrón accesible
+        // estándar para formularios que fallan la validación al enviar.
+        const firstInvalid = Object.keys(fields).find((name) => !validateField(name));
+        fields[firstInvalid].input.focus();
+        return;
+      }
+
+      alert('Formulario válido, listo para enviar al backend.');
+    });
+  </script>
+</body>
+</html>

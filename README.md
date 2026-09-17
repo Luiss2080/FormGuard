@@ -125,6 +125,7 @@ La librería viene con un set robusto de validadores listos para usar:
 - `minLength(value, min)`: Longitud mínima.
 - `maxLength(value, max)`: Longitud máxima.
 - `match(value, matchWith)`: Comparación exacta (ideal para "Confirmar Contraseña").
+- `pattern(value, regex)`: Cumple una expresión regular arbitraria (ideal para SKUs, códigos postales, slugs u otras reglas internas que no requieren su propio validador).
 - `isNumeric(value)`: Verifica si la cadena representa un número.
 - `min(value, minVal)`: Valor numérico mayor o igual.
 - `max(value, maxVal)`: Valor numérico menor o igual.
@@ -188,6 +189,29 @@ Este es el estándar que sigue toda la librería (ver `spec.md`, sección
 "Casos Límite"): un campo vacío nunca es "válido" para un validador de
 formato por sí solo, evitando que un campo opcional sin completar pase
 silenciosamente una regla de formato con datos incompletos.
+
+---
+
+## ♿ Accesibilidad
+
+La librería solo calcula si un valor es válido; conectar ese resultado a la
+interfaz de forma accesible es responsabilidad del formulario. El ejemplo
+[`examples/accessible-form.html`](./examples/accessible-form.html) muestra
+el patrón recomendado con HTML y JS puro (sin frameworks):
+
+- `aria-invalid="true"/"false"` en el input, sincronizado con el resultado de la validación.
+- `aria-describedby` apuntando al `id` del mensaje de error, para que los lectores de pantalla lo lean junto con la etiqueta del campo.
+- `role="alert"` en el mensaje, para que se anuncie apenas aparece.
+- Validación al perder el foco (`blur`), no en cada tecla, y foco automático al primer campo inválido si el usuario intenta enviar el formulario con errores.
+
+```html
+<input id="email" aria-describedby="email-error" aria-invalid="false" />
+<p id="email-error" role="alert"></p>
+```
+
+```javascript
+input.setAttribute('aria-invalid', isEmail(input.value) ? 'false' : 'true');
+```
 
 ---
 
