@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { required, isEmail, minLength, maxLength, isUrl, isNumeric, match, isPhoneBolivia, validateForm, validateFormAsync, isDate, isAlphanumeric, min, max, isCreditCard, maxFileSize, allowedFileTypes, isUUID, isIP, isHexColor, isJSON, isStrongPassword } from '../src/index.js';
+import { required, isEmail, minLength, maxLength, isUrl, isNumeric, match, pattern, isPhoneBolivia, validateForm, validateFormAsync, isDate, isAlphanumeric, min, max, isCreditCard, maxFileSize, allowedFileTypes, isUUID, isIP, isHexColor, isJSON, isStrongPassword } from '../src/index.js';
 
 test('required rechaza vacío y espacios', () => {
   assert.equal(required('hola'), true);
@@ -103,6 +103,14 @@ test('isNumeric valida numeros', () => {
 test('match comprueba igualdad estricta', () => {
   assert.equal(match('pass', 'pass'), true);
   assert.equal(match('pass', 'fail'), false);
+});
+
+test('pattern valida contra una expresión regular arbitraria', () => {
+  const sku = /^[A-Z]{3}-\d{4}$/;
+  assert.equal(pattern('ABC-1234', sku), true);
+  assert.equal(pattern('abc-1234', sku), false);
+  assert.equal(pattern('ABC-12', sku), false);
+  assert.equal(pattern(1234, sku), false); // no-string
 });
 
 test('min y max evaluan numeros', () => {

@@ -143,6 +143,18 @@ export function match(value, matchWith) {
   return value === matchWith;
 }
 
+/**
+ * Valida que el valor cumpla una expresión regular arbitraria. Útil para
+ * reglas de negocio que no ameritan su propio validador dedicado
+ * (códigos postales, slugs, formatos internos, etc.).
+ *
+ * Ej: pattern(sku, /^[A-Z]{3}-\d{4}$/)
+ */
+export function pattern(value, regex) {
+  if (typeof value !== 'string') return false;
+  return regex.test(value);
+}
+
 /** Valida que el archivo no supere el tamaño máximo (en MB). */
 export function maxFileSize(file, maxMb) {
   if (!file || !file.size) return false;

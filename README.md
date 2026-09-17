@@ -121,6 +121,7 @@ La librería viene con un set robusto de validadores listos para usar:
 - `minLength(value, min)`: Longitud mínima.
 - `maxLength(value, max)`: Longitud máxima.
 - `match(value, matchWith)`: Comparación exacta (ideal para "Confirmar Contraseña").
+- `pattern(value, regex)`: Cumple una expresión regular arbitraria (ideal para SKUs, códigos postales, slugs u otras reglas internas que no requieren su propio validador).
 - `isNumeric(value)`: Verifica si la cadena representa un número.
 - `min(value, minVal)`: Valor numérico mayor o igual.
 - `max(value, maxVal)`: Valor numérico menor o igual.
