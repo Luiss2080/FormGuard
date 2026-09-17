@@ -32,9 +32,16 @@ export function isEmail(value) {
   return typeof value === 'string' && EMAIL_RE.test(value.trim());
 }
 
-/** Valida que un texto tenga al menos `min` caracteres (sin contar espacios extremos). */
+/**
+ * Valida que un texto tenga al menos `min` caracteres (sin contar espacios
+ * extremos). Acepta números y booleanos igual que `maxLength` (se convierten
+ * con `String()` antes de medir), para que ambas reglas de longitud se
+ * comporten de forma consistente sin importar el tipo del valor original
+ * (ej. un input numérico controlado que entrega `123` en vez de `'123'`).
+ */
 export function minLength(value, min) {
-  return typeof value === 'string' && value.trim().length >= min;
+  if (value === undefined || value === null) return false;
+  return String(value).trim().length >= min;
 }
 
 /** Valida que un texto tenga como máximo `max` caracteres. */

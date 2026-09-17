@@ -36,6 +36,17 @@ test('minLength respeta el mínimo', () => {
   assert.equal(minLength('hi', 3), false);
 });
 
+test('minLength coacciona números/booleanos igual que maxLength, y rechaza null/undefined', () => {
+  // Bug: minLength exigía typeof === 'string', así que un valor numérico
+  // (ej. de un <input type="number">) siempre fallaba aunque maxLength sí
+  // lo aceptaba vía String(value) — comportamiento inconsistente entre las
+  // dos reglas de longitud.
+  assert.equal(minLength(123, 2), true);
+  assert.equal(minLength(1, 2), false);
+  assert.equal(minLength(null, 1), false);
+  assert.equal(minLength(undefined, 1), false);
+});
+
 test('isPhoneBolivia acepta celulares válidos con o sin prefijo/formato', () => {
   assert.equal(isPhoneBolivia('71234567'), true);
   assert.equal(isPhoneBolivia('+59171234567'), true);
