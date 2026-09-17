@@ -13,6 +13,38 @@ test('isEmail valida formato básico', () => {
   assert.equal(isEmail('no-es-email'), false);
 });
 
+test('isEmail acepta plus-addressing y dominios con varios subniveles', () => {
+  assert.equal(isEmail('user+tag@example.com'), true);
+  assert.equal(isEmail('user.name+filter@sub.example.co.uk'), true);
+});
+
+test('isEmail acepta dominios internacionalizados (unicode)', () => {
+  assert.equal(isEmail('user@müller.de'), true);
+  assert.equal(isEmail('user@例え.jp'), true);
+});
+
+test('isEmail rechaza TLD faltante o inválido', () => {
+  assert.equal(isEmail('user@localhost'), false); // sin punto, sin TLD
+  assert.equal(isEmail('user@example'), false);
+  assert.equal(isEmail('user@example.1'), false); // TLD numérico no es válido
+});
+
+test('isEmail maneja espacios: recorta extremos, rechaza espacios internos', () => {
+  assert.equal(isEmail('  user@example.com  '), true);
+  assert.equal(isEmail('user @example.com'), false);
+  assert.equal(isEmail('user@ example.com'), false);
+});
+
+test('isEmail rechaza puntos consecutivos o mal ubicados en el dominio', () => {
+  // Bug: la regex anterior usaba un único `[^\s@]+` para todo el dominio,
+  // así que un punto doble ("example..com") igual hacía match porque el
+  // primer grupo podía "comerse" el primer punto.
+  assert.equal(isEmail('user@example..com'), false);
+  assert.equal(isEmail('user@.com'), false);
+  assert.equal(isEmail('user@'), false);
+  assert.equal(isEmail('@example.com'), false);
+});
+
 test('minLength respeta el mínimo', () => {
   assert.equal(minLength('hola', 3), true);
   assert.equal(minLength('hi', 3), false);
