@@ -1,222 +1,198 @@
-# 🛡️ FormGuard
-
 <div align="center">
-  <img src="https://img.shields.io/npm/v/formguard?color=6d28d9&label=version" alt="Version" />
-  <img src="https://img.shields.io/badge/dependencies-0-success" alt="Zero Dependencies" />
-  <img src="https://img.shields.io/badge/types-TypeScript-blue" alt="TypeScript Support" />
-  <br/>
-  <p><b>Validación de formularios ultrarrápida, agnóstica y sin dependencias.</b></p>
+  <img src="docs/assets/logo.svg" width="96" alt="Logo de FormGuard" />
+  <h1>FormGuard</h1>
+  <p><b>Validación de formularios sin dependencias para JavaScript/TypeScript, con un hook opcional para React.</b></p>
+  <img src="https://img.shields.io/badge/estado-funcional%20(sin%20publicar%20en%20npm)-blue?style=for-the-badge" alt="Estado: funcional, sin publicar en npm" />
+  <img src="https://img.shields.io/badge/JavaScript-ESM-f7df1e?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript ESM" />
+  <img src="https://img.shields.io/badge/tipos-.d.ts-3178c6?style=for-the-badge&logo=typescript&logoColor=white" alt="Tipos .d.ts" />
+  <img src="https://img.shields.io/badge/node-%3E%3D18-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node 18 o superior" />
+  <img src="https://img.shields.io/badge/tests-28%20pasan-success?style=for-the-badge" alt="28 tests pasan" />
+  <a href="https://github.com/Luiss2080/FormGuard/actions/workflows/ci.yml"><img src="https://github.com/Luiss2080/FormGuard/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <p>
+    <a href="#-inicio-rápido">Inicio rápido</a> ·
+    <a href="#-características">Características</a> ·
+    <a href="#-arquitectura">Arquitectura</a> ·
+    <a href="#-pruebas">Pruebas</a> ·
+    <a href="#-lo-que-todavía-no-existe">Limitaciones</a>
+  </p>
 </div>
 
----
+FormGuard (antes `form-validator-simple`) es una librería de **reglas de validación como funciones
+puras** más `validateForm` / `validateFormAsync` para aplicarlas a un objeto de datos, y un hook
+`useFormValidator` para React. **No** es un framework de formularios: no renderiza campos, no
+maneja `touched`/`dirty` ni validaciones de objetos anidados.
 
-**FormGuard** (anteriormente publicado como `form-validator-simple`) es una
-librería moderna y ligera diseñada para validar datos en JavaScript y
-TypeScript de forma limpia y declarativa. Nació bajo la filosofía de "cero
-dependencias", lo que la hace increíblemente rápida y segura. Además,
-incluye un hook oficial para integrarse sin esfuerzo con **React**.
+## 🎬 Vista rápida
 
-## ✨ Características Principales
+Captura de la app de demostración incluida en `demo/` (React + Vite), corrida en local:
 
-- 🪶 **Zero Dependencies:** Máximo rendimiento sin engordar tu `node_modules`.
-- ⚛️ **Soporte Nativo para React:** Incluye `useFormValidator` para manejar estados y errores al instante.
-- ⚡ **Asincronía Real:** Valida contra bases de datos o APIs en tiempo real con `validateFormAsync`.
-- 📁 **Validación de Archivos:** Reglas dedicadas para tamaño (`maxFileSize`) y tipos permitidos (`allowedFileTypes`).
-- 🛡️ **Tipado Estricto:** Completamente tipada con TypeScript para un autocompletado perfecto.
-- 🧠 **Modo Multi-Error:** Retorna todos los errores de un campo si así lo deseas, no solo el primero.
+<div align="center">
+  <img src="docs/screenshots/demo.png" width="760" alt="Página de demostración de FormGuard con el formulario de registro y un fragmento de código del hook useFormValidator" />
+</div>
 
----
+## ✨ Características
 
-## 🚀 Instalación
+| Característica | Detalle |
+|---|---|
+| Sin dependencias | `package.json` no declara `dependencies`; React se importa solo desde `formguard/react`. |
+| Reglas de texto y número | `required`, `isEmail`, `minLength`, `maxLength`, `match`, `pattern`, `isNumeric`, `min`, `max`, `isAlphanumeric`, `isStrongPassword`. |
+| Formatos | `isUrl`, `isDate` (`YYYY-MM-DD` real), `isCreditCard` (Luhn), `isUUID`, `isIP` (v4 y v6 completo), `isHexColor`, `isJSON`, `isPhoneBolivia` (8 dígitos, empieza en 6 o 7, acepta `+591`). |
+| Archivos | `maxFileSize(file, mb)` y `allowedFileTypes(file, tipos)`, esta última compara `file.type` declarado, no inspecciona el contenido. |
+| Formulario completo | `validateForm(data, rules, { allErrors })`: primer error por campo, o todos si `allErrors: true`. |
+| Asíncrono | `validateFormAsync` espera reglas que devuelven promesas. |
+| React | `useFormValidator(initial, rules)` devuelve `values`, `errors`, `handleChange`, `validate`, `isValid`, `isSubmitting`. |
+| Tipos | `src/index.d.ts` y `src/react/index.d.ts`. |
 
-Usando npm:
+## 🏗️ Arquitectura
 
-```bash
-npm install formguard
+```mermaid
+flowchart TD
+  R["Reglas: required, isEmail, minLength, ..."] --> V["validateForm / validateFormAsync<br/>src/index.js"]
+  D["Datos del formulario"] --> V
+  V --> O["{ valid, errors }"]
+  V --> H["useFormValidator<br/>src/react/index.js"]
+  H --> U["Componente React: values, errors, handleChange, validate"]
+  T["Tipos: src/index.d.ts, src/react/index.d.ts"] -.-> V
+  T -.-> H
 ```
 
-Usando yarn:
+## 🚀 Inicio rápido
+
+| Requisito | Versión |
+|---|---|
+| Node.js | 18 o superior |
+| React (solo para el hook) | Cualquiera con hooks; el demo usa React 19 |
+
+**Este paquete no está publicado en npm** (`npm view formguard` responde 404), así que `npm install formguard` no funciona. Úsalo desde el repositorio:
 
 ```bash
-yarn add formguard
+git clone https://github.com/Luiss2080/FormGuard.git
+cd FormGuard
+npm test
 ```
 
----
-
-## 📖 Uso Básico (Vanilla JS / Node)
-
-Nuestra API base es agnóstica y funciona en cualquier entorno de JavaScript.
-
-```javascript
-import { validateForm, isEmail, required, minLength } from 'formguard';
-
-const data = {
-  username: 'luis',
-  email: 'luis@invalido'
-};
+```js
+import { validateForm, isEmail, required, minLength } from './src/index.js';
 
 const rules = {
   username: [
     v => required(v) || 'El usuario es obligatorio',
-    v => minLength(v, 5) || 'Mínimo 5 caracteres'
+    v => minLength(v, 5) || 'Mínimo 5 caracteres',
   ],
-  email: v => isEmail(v) || 'El email no tiene un formato válido'
+  email: v => isEmail(v) || 'El email no tiene un formato válido',
 };
 
-// Pasando { allErrors: true } te devuelve un array de errores por campo
-const { valid, errors } = validateForm(data, rules, { allErrors: true });
-
-if (!valid) {
-  console.log(errors); 
-  // { username: ['Mínimo 5 caracteres'], email: ['El email no tiene un formato válido'] }
-}
+const { valid, errors } = validateForm({ username: 'luis', email: 'luis@invalido' }, rules, { allErrors: true });
+// valid: false
+// errors: { username: ['Mínimo 5 caracteres'], email: ['El email no tiene un formato válido'] }
 ```
 
----
+Una regla devuelve `true` si el valor es válido o un mensaje de texto si no lo es.
 
-## ⚛️ Integración con React
-
-Si usas React, puedes importar nuestro hook exclusivo que maneja todo el estado interno (valores, errores, estado de carga) de forma reactiva.
+<details>
+<summary>Hook de React</summary>
 
 ```jsx
 import { useFormValidator } from 'formguard/react';
-import { required, isEmail, isCreditCard } from 'formguard';
+import { isEmail } from 'formguard';
 
-function App() {
+function Formulario() {
   const { values, errors, handleChange, validate, isSubmitting } = useFormValidator(
-    // Estado inicial
-    { email: '', card: '' }, 
-    // Reglas
-    {
-      email: v => isEmail(v) || 'Email inválido',
-      card: v => isCreditCard(v) || 'Tarjeta inválida (algoritmo Luhn)'
-    }
+    { email: '' },
+    { email: v => isEmail(v) || 'Email inválido' },
   );
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    const isValid = await validate(); // Automáticamente revisa si hay asincronía
-    if (isValid) alert("¡Todo perfecto!");
+    if (await validate()) console.log('ok', values);
   };
 
   return (
     <form onSubmit={onSubmit}>
-      <input 
-        value={values.email} 
-        onChange={e => handleChange('email', e.target.value)} 
-      />
-      {errors.email && <span className="error">{errors.email}</span>}
-
+      <input value={values.email} onChange={e => handleChange('email', e.target.value)} />
+      {errors.email && <span>{errors.email}</span>}
       <button disabled={isSubmitting}>Enviar</button>
     </form>
   );
 }
 ```
 
----
+`validate()` valida en modo **síncrono** por defecto. Si alguna regla es asíncrona, llama `validate(true)`.
+El hook limpia el error de un campo al llamarse `handleChange` sobre él.
 
-## 🧰 Catálogo de Reglas Disponibles
+</details>
 
-La librería viene con un set robusto de validadores listos para usar:
+<details>
+<summary>Reglas asíncronas</summary>
 
-### Textos y Números
-- `required(value)`: Campo no vacío.
-- `isEmail(value)`: Valida formato de correo.
-- `minLength(value, min)`: Longitud mínima.
-- `maxLength(value, max)`: Longitud máxima.
-- `match(value, matchWith)`: Comparación exacta (ideal para "Confirmar Contraseña").
-- `pattern(value, regex)`: Cumple una expresión regular arbitraria (ideal para SKUs, códigos postales, slugs u otras reglas internas que no requieren su propio validador).
-- `isNumeric(value)`: Verifica si la cadena representa un número.
-- `min(value, minVal)`: Valor numérico mayor o igual.
-- `max(value, maxVal)`: Valor numérico menor o igual.
-- `isAlphanumeric(value)`: Solo letras y números.
-- `isStrongPassword(value)`: Contraseñas con mayúsculas, minúsculas, números y símbolos.
+```js
+import { validateFormAsync, required } from './src/index.js';
 
-### Formatos Avanzados
-- `isUrl(value)`: Valida enlaces y dominios web.
-- `isDate(value)`: Valida fechas reales en formato `YYYY-MM-DD` (incluso años bisiestos).
-- `isCreditCard(value)`: Valida tarjetas bancarias usando el poderoso **Algoritmo de Luhn**.
-- `isUUID(value)`: Identificadores universales (ej. bases de datos).
-- `isIP(value)`: Direcciones IPv4 e IPv6.
-- `isHexColor(value)`: Colores hexadecimales (`#fff`, `#FF5733`).
-- `isJSON(value)`: Validar cadenas de texto JSON.
-- `isPhoneBolivia(value)`: Regla regional para celulares de 8 dígitos.
-
-### 📁 Archivos (Files)
-- `maxFileSize(file, maxMb)`: Valida que el archivo no supere el tamaño en Megabytes.
-- `allowedFileTypes(file, ['image/png', 'application/pdf'])`: Verifica la firma MIME del archivo.
-
----
-
-## ⏳ Validaciones Asíncronas
-
-Si necesitas consultar una base de datos para saber si un nombre de usuario existe, ¡puedes hacerlo! Solo devuelve una Promesa en tu regla y usa `validateFormAsync` (o simplemente llama a `validate()` si usas el hook de React).
-
-```javascript
-import { validateFormAsync, required } from 'formguard';
-
-const data = { username: 'admin' };
 const rules = {
   username: async (v) => {
     if (!required(v)) return 'Requerido';
-    const exists = await fetch(`/api/users/${v}`).then(r => r.json());
-    return !exists || 'Ese nombre de usuario ya está tomado';
-  }
+    const existe = await fetch(`/api/users/${v}`).then(r => r.json());
+    return !existe || 'Ese nombre de usuario ya está tomado';
+  },
 };
 
-const { valid, errors } = await validateFormAsync(data, rules);
+const { valid, errors } = await validateFormAsync({ username: 'admin' }, rules);
 ```
 
----
+</details>
 
-## 🧩 Campos opcionales: `required` + validadores de formato
+<details>
+<summary>Campos opcionales y accesibilidad</summary>
 
-Los validadores de formato (`isEmail`, `isUrl`, `isDate`, `isCreditCard`,
-`isHexColor`, etc.) **rechazan un valor vacío por diseño**: `isEmail('')`
-devuelve `false`, no `true`. Si un campo es opcional, combínalo
-explícitamente con `required` en vez de asumir que el validador de formato
-lo va a "dejar pasar":
+Los validadores de formato rechazan valores vacíos (`isEmail('')` es `false`). Para un campo opcional:
 
-```javascript
-// Campo obligatorio: basta con el validador de formato.
-email: v => isEmail(v) || 'Email inválido'
-
-// Campo opcional: solo valida el formato si el usuario escribió algo.
+```js
 sitioWeb: v => !required(v) || isUrl(v) || 'URL inválida'
 ```
 
-Este es el estándar que sigue toda la librería (ver `spec.md`, sección
-"Casos Límite"): un campo vacío nunca es "válido" para un validador de
-formato por sí solo, evitando que un campo opcional sin completar pase
-silenciosamente una regla de formato con datos incompletos.
+`required` trata `0` y `false` como valores presentes; vacíos son `null`, `undefined`, texto en blanco y arrays vacíos.
+La librería solo calcula validez; [`examples/accessible-form.html`](./examples/accessible-form.html) muestra cómo enlazarla con
+`aria-invalid`, `aria-describedby` y `role="alert"` en HTML puro.
 
----
+</details>
 
-## ♿ Accesibilidad
+<details>
+<summary>Estructura de carpetas</summary>
 
-La librería solo calcula si un valor es válido; conectar ese resultado a la
-interfaz de forma accesible es responsabilidad del formulario. El ejemplo
-[`examples/accessible-form.html`](./examples/accessible-form.html) muestra
-el patrón recomendado con HTML y JS puro (sin frameworks):
-
-- `aria-invalid="true"/"false"` en el input, sincronizado con el resultado de la validación.
-- `aria-describedby` apuntando al `id` del mensaje de error, para que los lectores de pantalla lo lean junto con la etiqueta del campo.
-- `role="alert"` en el mensaje, para que se anuncie apenas aparece.
-- Validación al perder el foco (`blur`), no en cada tecla, y foco automático al primer campo inválido si el usuario intenta enviar el formulario con errores.
-
-```html
-<input id="email" aria-describedby="email-error" aria-invalid="false" />
-<p id="email-error" role="alert"></p>
+```text
+src/index.js, src/index.d.ts          # reglas y validateForm / validateFormAsync
+src/react/index.js, index.d.ts         # hook useFormValidator
+test/index.test.js                     # pruebas node:test
+demo/                                  # app React + Vite de demostración
+examples/accessible-form.html          # ejemplo accesible sin framework
+spec.md                                # especificación (SDD)
+.github/workflows/ci.yml               # CI en Node 18, 20 y 22
 ```
 
-```javascript
-input.setAttribute('aria-invalid', isEmail(input.value) ? 'false' : 'true');
+</details>
+
+Para ver la demo: `cd demo && npm ci && npx vite`.
+
+## 🧪 Pruebas
+
+```bash
+npm test
 ```
 
----
+Ejecutan **28 pruebas** (`node:test`) sobre reglas, `validateForm` y `validateFormAsync`; todas pasan. El workflow de CI corre `npm test` en Node 18, 20 y 22. El hook de React y la demo no tienen pruebas dentro de esa suite.
 
-## 🧑‍💻 Licencia e Involucrados
+## 🚧 Lo que todavía no existe
 
-Desarrollado con arquitectura basada en **SDD (Spec-Driven Development)** para asegurar que el código siempre dice la verdad frente a los requerimientos.
+- No está publicado en npm; el badge y las instrucciones de `npm install formguard` de la versión anterior no eran ciertos.
+- `demo/src/App.test.jsx` **no funciona hoy**: `npx vitest run` en `demo/` falla con `Failed to resolve import "react" from "../src/react/index.js"`.
+- La demo aún muestra el título "Form Validator Simple" (nombre anterior).
+- `allowedFileTypes` confía en `file.type` que declara el navegador; no verifica el contenido real.
+- `isEmail`, `isUrl` y `isStrongPassword` son expresiones regulares simples (la contraseña fuerte exige uno de `@$!%*?&` y solo admite esos símbolos); no sustituyen una validación en servidor.
+- Sin validación de objetos anidados ni mensajes internacionalizados.
+- El README anterior decía que `validate()` del hook revisa la asincronía automáticamente; en el código hay que pasar `true`.
 
-MIT License. Siéntete libre de crear un Issue o Pull Request si quieres aportar nuevas reglas al ecosistema.
+## 📄 Licencia
+
+MIT — ver [LICENSE](./LICENSE).
+
+<div align="center"><sub>Hecho por Luiss2080 · Diseñado con Spec-Driven Development (ver <code>spec.md</code>)</sub></div>
